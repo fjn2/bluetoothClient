@@ -1,34 +1,87 @@
-var BluetoothSerialPort = require("bluetooth-serial-port").BluetoothSerialPort;
-var serial = new BluetoothSerialPort();
+const debug = require('debug')('bluetoothClient');
+const { BluetoothSerialPort } = require('bluetooth-serial-port');
 
-serial.listPairedDevices(function(pairedDevices) {
-  console.log(JSON.stringify(pairedDevices));
-    const result = pairedDevices.find((device) => (device.name === 'OBDII'));
-    // const service = result.services.find((srv) => (srv.name === 'RFCOMM custom service'));
-    if (result) {
-      const service = result.services[0];
+const serial = new BluetoothSerialPort();
+
+const readline = require('readline');
+
+function Terminal() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: false,
+  });
+
+  this.inputQueue = [];
+  this.requestQueue = [];
+
+  rl.on('line', (line) => {
+    if (this.requestQueue.length > 0) {
+      const resolve = this.requestQueue.shift();
+      resolve(line);
+    } else {
+      this.inputQueue.push(line);
     }
+  });
 
-    serial.connect(result.address, service.channel, () =>{
-      console.log('connected');
-      serial.on('data', function(buffer) {
-        console.log(buffer.toString('utf-8'));
-      });
+  this.close = () => {
+    rl.close();
+  };
+
+  this.readLine = () => (new Promise((resolve) => {
+    if (this.inputQueue.length > 0) {
+      resolve(this.inputQueue.shift());
+    } else {
+      this.requestQueue.push(resolve);
+    }
+  }));
+  return this;
+}
+
+function connect(srl, address, channel) {
+  return new Promise((resolve, reject) => {
+    srl.connect(address, channel, () => {
+      debug('Connected to device');
+      resolve();
     }, () => {
-      console.log('error');
+      reject(new Error('Error'));
+    });
+  });
+}
+
+async function main() {
+  try {
+    const terminal = new Terminal();
+    console.log('Enter MAC address');
+    const macAddress = await terminal.readLine();
+
+    const channel = await terminal.readLine();
+    console.log(`Trying to connect to "${macAddress}" using "${channel}" channel`);
+    await connect(serial, macAddress, channel);
+
+    serial.on('data', (buffer) => {
+      debug(buffer.toString('utf-8'));
     });
 
-});
+    let comunicationEnds = false;
+    while (!comunicationEnds) {
+      const command = await terminal.readLine();
+      if (command === 'exit') {
+        comunicationEnds = true;
+        // TODO make the correct disconect using bluetooth
+      }
+      serial.write(Buffer.from(command, 'utf-8'), (err, bytesWritten) => {
+        if (err) {
+          debug(err);
+          debug(bytesWritten);
+        }
+      });
+    }
 
-var readline = require('readline');
-var rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: false
-});
+    terminal.close();
+  } catch (err) {
+    debug(err);
+  }
+}
 
-rl.on('line', function(line){
-  serial.write(new Buffer(line, 'utf-8'), function(err, bytesWritten) {
-    if (err) console.log(err);
-  });
-})
+main();
