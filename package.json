@@ -1,7 +1,7 @@
 {
   "name": "bluetoothclient",
   "version": "1.0.0",
-  "description": "",
+  "description": "Basic Bluetooth client to send string messages using terminal",
   "main": "index.js",
   "scripts": {
     "start": "cross-env DEBUG=bluetoothClient node index.js",
