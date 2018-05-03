@@ -54,7 +54,7 @@ async function main() {
     const terminal = new Terminal();
     console.log('Enter MAC address');
     const macAddress = await terminal.readLine();
-
+    console.log('Enter channel');
     const channel = await terminal.readLine();
     console.log(`Trying to connect to "${macAddress}" using "${channel}" channel`);
     await connect(serial, macAddress, channel);
@@ -65,7 +65,7 @@ async function main() {
 
     let comunicationEnds = false;
     while (!comunicationEnds) {
-      const command = await terminal.readLine();
+      const command = await terminal.readLine(); // eslint-disable-line
       if (command === 'exit') {
         comunicationEnds = true;
         // TODO make the correct disconect using bluetooth
