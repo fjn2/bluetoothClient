@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const debug = require('debug')('bluetoothClient');
 const { BluetoothSerialPort } = require('bluetooth-serial-port');
 

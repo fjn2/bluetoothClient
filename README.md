@@ -14,6 +14,8 @@ npm install
 npm start
 ```
 
+![](https://i.imgur.com/foixBgN.gif)
+
 ## Lint
 
 ```

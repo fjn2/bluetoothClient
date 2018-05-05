@@ -1,18 +1,28 @@
 {
   "name": "bluetoothclient",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Basic Bluetooth client to send string messages using terminal",
+  "keywords": [
+    "bluetooth"
+  ],
   "main": "index.js",
   "scripts": {
-    "start": "cross-env DEBUG=bluetoothClient node index.js",
+    "start": "cross-env DEBUG=bluetoothClient btc",
     "lint": "eslint **.js"
   },
-  "author": "",
+  "bin": {
+    "btc": "./index.js"
+  },
+  "author": "Federico Naveira",
   "license": "ISC",
   "dependencies": {
     "bluetooth-serial-port": "^2.1.6",
     "cross-env": "^5.1.4",
     "debug": "^3.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fjn2/bluetoothClient.git"
   },
   "devDependencies": {
     "eslint": "^4.19.1",
